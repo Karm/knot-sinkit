@@ -1,0 +1,24 @@
+-- Listen
+net.listen({'0.0.0.0', '::'})
+net.ipv6 = true
+net.ipv4 = true
+
+-- Drop root privileges
+user('kresd', 'kresd')
+
+-- Auto-maintain root TA
+-- trust_anchors.file = 'root.keys'
+
+modules = {
+	'policy',   -- Block queries to local zones/bad sites
+	'hints',    -- Load /etc/hosts and allow custom root hints
+         sinkit = { -- Sinkit module, asks oraculum whether IP/hostname is to be sinkholed
+            config = '127.0.0.1' -- config not used ATM
+         },
+	'stats',    -- Track internal statistics
+	'predict',  -- Prefetch expiring/frequent records
+}
+
+-- Smaller cache size
+cache.size = 1 * GB
+

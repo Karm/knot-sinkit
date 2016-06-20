@@ -1,0 +1,8 @@
+@@ -1,5 +1,6 @@
+ # List of built-in modules
+ modules_TARGETS := hints \
++                   sinkit \
+                    stats
+ 
+ # Memcached
+
