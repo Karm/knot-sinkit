@@ -1,8 +1,9 @@
 # knot-sinkit
-Sinkit GO module for Knot DNS Resolver
+Sinkit C module for Knot DNS Resolver.
 
 ## Expected env vars
 
+    export SINKIT_KRESD_VERBOSE=-v
     export SINKIT_SINKHOLE=127.0.0.1
     export SINKIT_ORACULUM_URL="http://localhost:8080/sinkit/rest/blacklist/dns"
     export SINKIT_ACCESS_TOKEN="X-sinkit-token: 765fred432129873462139874623897jasgfasjd"
