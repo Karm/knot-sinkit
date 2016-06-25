@@ -38,8 +38,10 @@
 
 /* Defaults */
 #define DEFAULT_SERVER "localhost"
-#define DEBUG_MSG(qry, fmt...) QRDEBUG(qry, "sinkit",  fmt)
-#define SINKHOLE "137.116.197.12"
+#define DEBUG_MSG(qry, fmt...) QRDEBUG(qry, "sinkit", fmt)
+
+static const char *sinkit_sinkhole;
+static bool sinkit_oraculum_disabled;
 
 struct hostname_bundle {
     char *hostname_str;
@@ -47,7 +49,23 @@ struct hostname_bundle {
 };
 
 static int load(struct kr_module *module, const char *path) {
-    DEBUG_MSG(NULL, "C&C server lives at: %s\n", path);
+    DEBUG_MSG(NULL, "Sinkit module loaded.\n");
+    //DEBUG_MSG(NULL, "Oraculum lives at %s\n", path);
+
+    sinkit_sinkhole = getenv("SINKIT_SINKHOLE");
+    if(!sinkit_sinkhole) {
+        die("SINKIT_SINKHOLE environment variable must be set to an IP address.\n");
+    }
+
+    char *tmp_value = getenv("SINKIT_ORACULUM_DISABLED");
+    if(!tmp_value) {
+        die("SINKIT_ORACULUM_DISABLED environment variable must be set to either 1 or 0.\n");
+    }
+    sinkit_oraculum_disabled = atoi(tmp_value);
+    if(sinkit_oraculum_disabled != 0 && sinkit_oraculum_disabled != 1) {
+        die("SINKIT_ORACULUM_DISABLED environment variable must be set to either 1 or 0.\n");
+    }
+
     init_connection();
     return kr_ok();
 }
@@ -128,7 +146,7 @@ static int collect(knot_layer_t *ctx) {
     const char *client_address =  inet_ntoa(sin->sin_addr);
     DEBUG_MSG(NULL, "Client IPv4 address: %s\n", client_address);
 
-    if (rplan->resolved.len > 0) {
+    if (!sinkit_oraculum_disabled && rplan->resolved.len > 0) {
         struct kr_query *last = array_tail(rplan->resolved);
         const knot_pktsection_t *ns = knot_pkt_section(param->answer, KNOT_ANSWER);
 
@@ -166,13 +184,13 @@ static int collect(knot_layer_t *ctx) {
             knot_pkt_put_question(param->answer, last->sname, last->sclass, last->stype);
             knot_pkt_begin(param->answer, KNOT_ANSWER); //AUTHORITY?
 
-            struct sockaddr_storage ss;
-            if (parse_addr_str(&ss, SINKHOLE) != 0) {
+            struct sockaddr_storage sinkhole;
+            if (parse_addr_str(&sinkhole, sinkit_sinkhole) != 0) {
                 return kr_error(EINVAL);
             }
 
-            size_t addr_len = kr_inaddr_len((struct sockaddr *)&ss);
-            const uint8_t *raw_addr = (const uint8_t *)kr_inaddr((struct sockaddr *)&ss);
+            size_t addr_len = kr_inaddr_len((struct sockaddr *)&sinkhole);
+            const uint8_t *raw_addr = (const uint8_t *)kr_inaddr((struct sockaddr *)&sinkhole);
             static knot_rdata_t rdata_arr[RDATA_ARR_MAX];
 
             knot_wire_set_id(param->answer->wire, msgid);
