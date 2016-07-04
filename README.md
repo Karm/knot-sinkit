@@ -5,11 +5,14 @@ Sinkit C module for Knot DNS Resolver.
 
     export SINKIT_KRESD_VERBOSE=-v
     export SINKIT_KRESD_FORKS="-f 2"
+    export SINKIT_KRESD_PREDICT_WINDOW_M=15
+    export SINKIT_KRESD_PREDICT_TRACK_LAST_H=6
+    export SINKIT_KRESD_CACHE_G=1
     export SINKIT_SINKHOLE=127.0.0.1
     export SINKIT_ORACULUM_URL="http://localhost:8080/sinkit/rest/blacklist/dns"
     export SINKIT_ACCESS_TOKEN="X-sinkit-token: 765fred432129873462139874623897jasgfasjd"
-    export SINKIT_MAX_CACHE_SIZE=10
-    export SINKIT_CACHE_TTL_S=5
+    export SINKIT_MAX_CACHE_SIZE=100000
+    export SINKIT_CACHE_TTL_S=400
     export SINKIT_ORACULUM_HARD_TIMEOUT_MS=300
     export SINKIT_ORACULUM_RECOVERY_SLEEP_S=10
     export SINKIT_ORACULUM_DISABLED=0

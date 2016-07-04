@@ -12,13 +12,16 @@ user('kresd', 'kresd')
 modules = {
 	'policy',   -- Block queries to local zones/bad sites
 	'hints',    -- Load /etc/hosts and allow custom root hints
-         sinkit = { -- Sinkit module, asks oraculum whether IP/hostname is to be sinkholed
-            config = '127.0.0.1' -- config not used ATM
-         },
+   sinkit = { -- Sinkit module, asks oraculum whether IP/hostname is to be sinkholed
+              config = '127.0.0.1' -- config not used ATM
+            },
 	'stats',    -- Track internal statistics
-	'predict',  -- Prefetch expiring/frequent records
+  predict = {
+              window = tonumber(env.SINKIT_KRESD_PREDICT_WINDOW_M),
+              period = tonumber(env.SINKIT_KRESD_PREDICT_TRACK_LAST_H)*(60/tonumber(env.SINKIT_KRESD_PREDICT_WINDOW_M)) -- track last n hours
+            }
 }
 
 -- Smaller cache size
-cache.size = 1 * GB
+cache.size = tonumber(env.SINKIT_KRESD_CACHE_G) * GB
 

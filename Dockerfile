@@ -1,4 +1,4 @@
-FROM fedora:23
+FROM fedora:24
 MAINTAINER Michal Karm Babacek <karm@email.cz>
 
 # Environment
@@ -34,8 +34,11 @@ COPY ["modules/modules.mk.patch", \
 
     # Update system and install packages 
 RUN dnf -y update && \
-    dnf -y install ${PKGS} ${PKGS_AUX} && \
-    git clone https://gitlab.labs.nic.cz/knot/resolver.git /tmp/build && \
+    dnf clean all
+RUN dnf -y install ${PKGS} ${PKGS_AUX} && \
+    # TODO fuse with the next step and clean compile time packages afterwards...
+    dnf clean all
+RUN git clone https://gitlab.labs.nic.cz/knot/resolver.git /tmp/build && \
     cd /tmp/build && \
     # Add sinkit module
     cp /tmp/sinkit modules/sinkit -R && \
@@ -46,8 +49,6 @@ RUN dnf -y update && \
     # Add sinkit config
     cp /tmp/config.sinkit /usr/local/etc/kresd/config.sinkit && \
     # Trim down the image
-#   dnf -y remove ${PKGS_AUX} && \
-    dnf clean all && \
     rm -rf /tmp/build
 
 # TODO: Shouldn't be needed. ld?
