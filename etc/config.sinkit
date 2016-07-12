@@ -24,4 +24,5 @@ modules = {
 
 -- Smaller cache size
 cache.size = tonumber(env.SINKIT_KRESD_CACHE_G) * GB
+cache.storage = env.SINKIT_KRESD_CACHE_STORAGE
 

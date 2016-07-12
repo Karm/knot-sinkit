@@ -8,6 +8,7 @@ Sinkit C module for Knot DNS Resolver.
     export SINKIT_KRESD_PREDICT_WINDOW_M=15
     export SINKIT_KRESD_PREDICT_TRACK_LAST_H=6
     export SINKIT_KRESD_CACHE_G=1
+    export SINKIT_KRESD_CACHE_STORAGE="lmdb:///dev/shm/"
     export SINKIT_SINKHOLE=127.0.0.1
     export SINKIT_ORACULUM_URL="http://localhost:8080/sinkit/rest/blacklist/dns"
     export SINKIT_ACCESS_TOKEN="X-sinkit-token: 765fred432129873462139874623897jasgfasjd"

@@ -53,6 +53,7 @@ RUN git clone https://gitlab.labs.nic.cz/knot/resolver.git /tmp/build && \
 
 # TODO: Shouldn't be needed. ld?
 ENV LD_LIBRARY_PATH=/usr/local/lib/:/usr/local/lib/kdns_modules/
+ENV PATH=$PATH:/usr/local/bin/:/usr/local/sbin/
 
 # Supervisor
 ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
