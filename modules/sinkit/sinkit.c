@@ -38,7 +38,6 @@
 
 /* Defaults */
 #define DEFAULT_SERVER "localhost"
-#define DEBUG_MSG(qry, fmt...) QRDEBUG(qry, "sinkit", fmt)
 
 static const char *sinkit_sinkhole;
 static bool sinkit_oraculum_disabled;
@@ -49,8 +48,8 @@ struct hostname_bundle {
 };
 
 static int load(struct kr_module *module, const char *path) {
-    DEBUG_MSG(NULL, "Sinkit module loaded.\n");
-    //DEBUG_MSG(NULL, "Oraculum lives at %s\n", path);
+    DEBUG_MSG("Sinkit module loaded.\n");
+    //DEBUG_MSG("Oraculum lives at %s\n", path);
 
     sinkit_sinkhole = getenv("SINKIT_SINKHOLE");
     if(!sinkit_sinkhole) {
@@ -100,7 +99,7 @@ static bool is_malevolent_address(const uint8_t *addr, size_t len, const char *h
         }
         char buffer[INET_ADDRSTRLEN];
         inet_ntop(AF_INET, &(*(const uint32_t *)(addr)),buffer,sizeof(buffer));
-        DEBUG_MSG(NULL, "Resolved IPv4: %s\n", buffer);
+        DEBUG_MSG("Resolved IPv4: %s\n", buffer);
         return address_malevolent(client_address, buffer, hostname);
 
     } else if (len == sizeof(struct in6_addr)) {
@@ -113,10 +112,10 @@ static bool is_malevolent_address(const uint8_t *addr, size_t len, const char *h
         }
         char buffer[INET6_ADDRSTRLEN];
         inet_ntop(AF_INET6, &(*(const uint32_t *)(addr)),buffer,sizeof(buffer));
-        DEBUG_MSG(NULL, "Resolved IPv6: %s\n", buffer);
+        DEBUG_MSG("Resolved IPv6: %s\n", buffer);
         return address_malevolent(client_address, buffer, hostname);
     } else {
-          DEBUG_MSG(NULL, "SHIT\n");
+          DEBUG_MSG("SHIT\n");
     }
 
     return false;
@@ -128,7 +127,7 @@ static void sanitize_hostname(knot_dname_t *hostname) {
     memset(&name_str, 0, sizeof(name_str));
     //char name_str[KNOT_DNAME_MAXLEN];
     knot_dname_to_str(name_str, hostname, sizeof(name_str));
-    DEBUG_MSG(NULL, "rr->owner is %s\n", name_str);
+    DEBUG_MSG("rr->owner is %s\n", name_str);
     // Sanitize the trailing dot.
     size_t actual_length = strlen(name_str);
     if(name_str[actual_length-1] == '.') {
@@ -144,7 +143,7 @@ static int collect(knot_layer_t *ctx) {
     struct sockaddr_in *sin = (struct sockaddr_in *) sa;
     //free?
     const char *client_address =  inet_ntoa(sin->sin_addr);
-    DEBUG_MSG(NULL, "Client IPv4 address: %s\n", client_address);
+    DEBUG_MSG("Client IPv4 address: %s\n", client_address);
 
     if (!sinkit_oraculum_disabled && rplan->resolved.len > 0) {
         struct kr_query *last = array_tail(rplan->resolved);
@@ -153,7 +152,7 @@ static int collect(knot_layer_t *ctx) {
         bool sinkit = false;
         uint16_t rclass;
 
-        DEBUG_MSG(NULL, "ns->count %d\n", ns->count);
+        DEBUG_MSG("ns->count %d\n", ns->count);
 
         for (unsigned i = 0; i < ns->count; ++i) {
             const knot_rrset_t *rr = knot_pkt_rr(ns, i);
@@ -169,7 +168,7 @@ static int collect(knot_layer_t *ctx) {
                 for (unsigned j = 0; j < rr->rrs.rr_count; j++) {
                     const knot_rdata_t *rdata = rr->rrs.data;
                      if (is_malevolent_address(knot_rdata_data(rdata), knot_rdata_rdlen(rdata), name_str, client_address)) {
-                         DEBUG_MSG(NULL, "XXX LISTED ADDRESS\n");
+                         DEBUG_MSG("XXX LISTED ADDRESS\n");
                          sinkit = true;
                          rclass = rr->rclass;
                      }

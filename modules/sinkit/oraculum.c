@@ -27,9 +27,6 @@
 #include "modules/sinkit/uthash.h"
 #include "lib/layer.h"
 
-#define DEBUG_MSG(qry, fmt...) QRDEBUG(qry, "oraculum", fmt)
-#define ERR_MSG(fmt...) fprintf(stderr, fmt)
-
 #define API_REQUEST_CONTENT_TYPE "Content-Type: application/json"
 #define USER_AGENT "Knot-resolver Sinkit/0.1"
 // What could possibly go wrong?
@@ -93,13 +90,13 @@ char* find_in_cache(const char *key) {
     if (entry) {
         time_t age = time (NULL) - entry->timestamp;
         if(age < sinkit_cache_ttl_s) {
-            DEBUG_MSG(NULL, "Record's age is %ld, which is fine.\n", age);
+            DEBUG_MSG("Record's age is %ld, which is fine.\n", age);
             // remove it (so the subsequent add will throw it on the front of the list)
             HASH_DELETE(hh, cache, entry);
             HASH_ADD_KEYPTR(hh, cache, entry->key, strlen(entry->key), entry);
             return entry->value;
         } else {
-            DEBUG_MSG(NULL, "Record is older then %d s, it's: %ld s old. Let's get rid of it.\n", sinkit_cache_ttl_s, age);
+            DEBUG_MSG("Record is older then %d s, it's: %ld s old. Let's get rid of it.\n", sinkit_cache_ttl_s, age);
             HASH_DELETE(hh, cache, entry);
             free(entry->key);
             free(entry->value);
@@ -117,7 +114,7 @@ void add_to_cache(const char *key, const char *value) {
     entry->value = strdup(value);
     time(&entry->timestamp);
     HASH_ADD_KEYPTR(hh, cache, entry->key, strlen(entry->key), entry);
-    DEBUG_MSG(NULL, "Adding to cache key: %s, value: %s, timestamp: %ld\n", entry->key, entry->value, entry->timestamp);
+    DEBUG_MSG("Adding to cache key: %s, value: %s, timestamp: %ld\n", entry->key, entry->value, entry->timestamp);
     // prune the cache to sinkit_max_cache_size
     if (HASH_COUNT(cache) >= sinkit_max_cache_size) {
         HASH_ITER(hh, cache, entry, tmp_entry) {
@@ -140,7 +137,7 @@ size_t write_callback(void *ptr, size_t size, size_t nmemb, void *buff) {
 
     data->size += (size * nmemb);
 
-    DEBUG_MSG(NULL, "data at %p size=%ld nmemb=%ld\n", ptr, size, nmemb);
+    DEBUG_MSG("data at %p size=%ld nmemb=%ld\n", ptr, size, nmemb);
 
     tmp = realloc(data->response_body, data->size + 1); // +1 for '\0'
 
@@ -158,7 +155,7 @@ size_t write_callback(void *ptr, size_t size, size_t nmemb, void *buff) {
 }
 
 void init_connection() {
-    DEBUG_MSG(NULL, "init_connection entry: done\n");
+    DEBUG_MSG("init_connection entry: done\n");
 
     // Control constants
     char *tmp_value;
@@ -265,7 +262,7 @@ void init_connection() {
     }
 
     data.response_body[0] = '\0';
-    DEBUG_MSG(NULL, "init_connection data: done\n");
+    DEBUG_MSG("init_connection data: done\n");
 
     curl_global_init(CURL_GLOBAL_DEFAULT);
     curl = curl_easy_init();
@@ -292,7 +289,7 @@ void init_connection() {
        headers = curl_slist_append(headers, API_REQUEST_CONTENT_TYPE);
        headers = curl_slist_append(headers, sinkit_access_token);
        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-       DEBUG_MSG(NULL, "init_connection curl: done\n");
+       DEBUG_MSG("init_connection curl: done\n");
      } else {
         die("CURL wasn't initialized.");
     }
@@ -311,10 +308,10 @@ bool api_call(const char* url) {
     if(recovery_sleep_timestamp != 0) {
         time_t recovery_sleep_elapsed = time (NULL) - recovery_sleep_timestamp;
         if(recovery_sleep_elapsed < sinkit_oraculum_recovery_sleep_s) {
-            DEBUG_MSG(NULL, "%d seconds elapsed from %d SINKIT_ORACULUM_RECOVERY_SLEEP_S, let's wait...\n", recovery_sleep_elapsed, sinkit_oraculum_recovery_sleep_s);
+            DEBUG_MSG("%d seconds elapsed from %d SINKIT_ORACULUM_RECOVERY_SLEEP_S, let's wait...\n", recovery_sleep_elapsed, sinkit_oraculum_recovery_sleep_s);
             return false;
         } else {
-            DEBUG_MSG(NULL, "%d seconds elapsed from %d SINKIT_ORACULUM_RECOVERY_SLEEP_S, Oraculum is ENABLED now.\n", recovery_sleep_elapsed, sinkit_oraculum_recovery_sleep_s);
+            DEBUG_MSG("%d seconds elapsed from %d SINKIT_ORACULUM_RECOVERY_SLEEP_S, Oraculum is ENABLED now.\n", recovery_sleep_elapsed, sinkit_oraculum_recovery_sleep_s);
             recovery_sleep_timestamp = 0;
         }
     }
@@ -341,13 +338,13 @@ bool api_call(const char* url) {
             if(nocache_response_cmp != 0) {
                 add_to_cache(url, data.response_body);
             } else {
-                DEBUG_MSG(NULL, "data.response_body: %s\n url: %s\n is not cacheable. add_to_cache skipped. nocache_response_cmp: %d\n", data.response_body, url, nocache_response_cmp);
+                DEBUG_MSG("data.response_body: %s\n url: %s\n is not cacheable. add_to_cache skipped. nocache_response_cmp: %d\n", data.response_body, url, nocache_response_cmp);
             }
         }
-        DEBUG_MSG(NULL, "data.response_body: %s\n url: %s\n from cache: %s\n", data.response_body, url, (value) ? "true" : "false");
+        DEBUG_MSG("data.response_body: %s\n url: %s\n from cache: %s\n", data.response_body, url, (value) ? "true" : "false");
         int negative_response_cmp = strncmp(data.response_body, sinkit_oraculum_negative_response_string, sinkit_oraculum_negative_response_string_len);
-        DEBUG_MSG(NULL, "negative_response_cmp: %d\n", negative_response_cmp);
-        DEBUG_MSG(NULL, "nocache_response_cmp: %d\n", nocache_response_cmp);
+        DEBUG_MSG("negative_response_cmp: %d\n", negative_response_cmp);
+        DEBUG_MSG("nocache_response_cmp: %d\n", nocache_response_cmp);
 
         /*
          * sinkit_oraculum_nocache_response_string present:  we DO NOT sinkhole and we DO NOT cache
@@ -364,7 +361,7 @@ bool api_call(const char* url) {
 
 char url_string[SINKIT_ORACULUM_URL_MAX_LEN + 1 + INET6_ADDRSTRLEN + 1 + KNOT_DNAME_MAXLEN + 1 + KNOT_DNAME_MAXLEN + 1];
 bool address_malevolent(const char *client_address, const char *address, const char *hostname) {
-    DEBUG_MSG(NULL, "Address %s\n", address);
+    DEBUG_MSG("Address %s\n", address);
     //127.0.0.1/109.123.209.192/hofyland.cz
     memset(&url_string, 0, sizeof(url_string));
 
@@ -380,16 +377,16 @@ bool address_malevolent(const char *client_address, const char *address, const c
 
     // If the feature is off, we still carry out the API call, but we always return false - not malevolent.
     if(sinkit_sinkhole_based_on_ip_address) {
-        DEBUG_MSG(NULL, "VERDICT: %d\n", result);
+        DEBUG_MSG("VERDICT: %d\n", result);
         return result;
     } else {
-        DEBUG_MSG(NULL, "VERDICT: %d\n", false);
+        DEBUG_MSG("VERDICT: %d\n", false);
         return false;
     }
 }
 
 bool hostname_malevolent(const char *client_address, const char *hostname) {
-    DEBUG_MSG(NULL, "Hostname %s\n", hostname);
+    DEBUG_MSG("Hostname %s\n", hostname);
     //127.0.0.1/hofyland.cz/hofyland.cz
     memset(&url_string, 0, sizeof(url_string));
 
@@ -402,6 +399,6 @@ bool hostname_malevolent(const char *client_address, const char *hostname) {
     strcat(url_string, hostname);
 
     bool result = api_call(url_string);
-    DEBUG_MSG(NULL, "VERDICT: %d\n", result);
+    DEBUG_MSG("VERDICT: %d\n", result);
     return result;
 }

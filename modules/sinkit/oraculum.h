@@ -21,6 +21,8 @@
 #include <stdlib.h>
 
 #define die(X, ...) fprintf(stderr, "ERROR %s:%d: " X "\n", __FILE__, __LINE__, ##__VA_ARGS__);exit(EXIT_FAILURE);
+#define ERR_MSG(fmt, ...) fprintf(stderr, fmt, ##__VA_ARGS__)
+#define DEBUG_MSG(fmt, ...) kr_log_debug("DEBUG %s: %d " fmt, __FILE__, __LINE__, ##__VA_ARGS__);
 
 void init_connection();
 
