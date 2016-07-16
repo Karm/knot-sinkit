@@ -3,6 +3,7 @@ Sinkit C module for Knot DNS Resolver.
 
 ## Expected env vars
 
+    export SINKIT_KRESD_NIC="eth0"
     export SINKIT_KRESD_VERBOSE=-v
     export SINKIT_KRESD_FORKS="-f 2"
     export SINKIT_KRESD_PREDICT_WINDOW_M=15
