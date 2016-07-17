@@ -24,6 +24,13 @@ RUN adduser kresd -M -s /sbin/nologin && \
     chgrp kresd /data/ -R && \
     chmod g+s /data
 
+# Update system and install packages 
+RUN dnf -y update && \
+    dnf clean all
+RUN dnf -y install ${PKGS} ${PKGS_AUX} && \
+    # TODO fuse with the next step and clean compile time packages afterwards...
+    dnf clean all
+
 # Sinkit sources
 COPY ["modules/sinkit/*", \
       "LICENSE",          \
@@ -32,12 +39,6 @@ COPY ["modules/modules.mk.patch", \
       "etc/config.sinkit",        \
       "/tmp/"]
 
-    # Update system and install packages 
-RUN dnf -y update && \
-    dnf clean all
-RUN dnf -y install ${PKGS} ${PKGS_AUX} && \
-    # TODO fuse with the next step and clean compile time packages afterwards...
-    dnf clean all
 RUN git clone https://gitlab.labs.nic.cz/knot/resolver.git /tmp/build && \
     cd /tmp/build && \
     # Add sinkit module
@@ -59,7 +60,4 @@ ENV PATH=$PATH:/usr/local/bin/:/usr/local/sbin/
 ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf", "-n"]
-
-
-
 
