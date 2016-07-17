@@ -1,5 +1,5 @@
 -- Listen
-net.ipv6 = true
+net.ipv6 = false
 net.ipv4 = true
 nicname = env.SINKIT_KRESD_NIC
 if nicname == nil or nicname == '' then
@@ -7,13 +7,15 @@ if nicname == nil or nicname == '' then
 end
 for name, addr_list in pairs(net.interfaces()) do
   if name == nicname then
-    net.listen(addr_list, 53)
+    print("Found interface " .. nicname)
+    net.listen(addr_list)
+  else
+    print("Not using interface " .. name)
   end
 end
 
 -- Drop root privileges
 user('kresd', 'kresd')
-
 -- Auto-maintain root TA
 -- trust_anchors.file = 'root.keys'
 
