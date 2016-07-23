@@ -138,10 +138,13 @@ static void sanitize_hostname(knot_dname_t *hostname) {
 static int collect(knot_layer_t *ctx) {
     struct kr_request *param = ctx->data;
     struct kr_rplan *rplan = &param->rplan;
-
+    if(!param->qsource.addr) {
+        ERR_MSG("Query source address is NULL. Skipping.\n");
+        return ctx->state;
+    }
     const struct sockaddr *sa = param->qsource.addr;
     struct sockaddr_in *sin = (struct sockaddr_in *) sa;
-    //free?
+
     const char *client_address =  inet_ntoa(sin->sin_addr);
     DEBUG_MSG("Client IPv4 address: %s\n", client_address);
 
