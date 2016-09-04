@@ -2,15 +2,27 @@
 net.ipv6 = false
 net.ipv4 = true
 nicname = env.SINKIT_KRESD_NIC
+addrprefix = env.SINKIT_ADDR_PREFIX
 if nicname == nil or nicname == '' then
   nicname = "eth0"
 end
+if addrprefix == nil or addrprefix == '' then
+  addrprefix = "10."
+end
 for name, addr_list in pairs(net.interfaces()) do
   if name == nicname then
-    print("Found interface " .. nicname)
-    net.listen(addr_list)
+    print("Using interface: " .. name)
+    for k, v in pairs(addr_list["addr"]) do
+      print(k, v)
+      if string.sub(v,1,string.len(addrprefix)) == addrprefix then
+        print("Using address: " .. v)
+        net.listen(v)
+      else
+        print("Skipping address: " .. v)
+      end
+    end
   else
-    print("Not using interface " .. name)
+    print("Skipping interface: " .. name)
   end
 end
 
