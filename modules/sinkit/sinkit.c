@@ -139,7 +139,7 @@ static int collect(knot_layer_t *ctx) {
     struct kr_request *param = ctx->data;
     struct kr_rplan *rplan = &param->rplan;
     if(!param->qsource.addr) {
-        ERR_MSG("Query source address is NULL. Skipping.\n");
+        DEBUG_MSG("Query source address is NULL. Skipping.\n");
         return ctx->state;
     }
     const struct sockaddr *sa = param->qsource.addr;
