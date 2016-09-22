@@ -39,8 +39,12 @@ COPY ["modules/modules.mk.patch", \
       "etc/config.sinkit",        \
       "/tmp/"]
 
+ENV KNOT_RESOLVER_VERSION v1.1.1
+
 RUN git clone https://gitlab.labs.nic.cz/knot/resolver.git /tmp/build && \
     cd /tmp/build && \
+    # Tag
+    git checkout ${KNOT_RESOLVER_VERSION} && \
     # Add sinkit module
     cp /tmp/sinkit modules/sinkit -R && \
     patch modules/modules.mk -i /tmp/modules.mk.patch && \
