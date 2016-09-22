@@ -16,6 +16,7 @@ for name, addr_list in pairs(net.interfaces()) do
       print(k, v)
       if string.sub(v,1,string.len(addrprefix)) == addrprefix then
         print("Using address: " .. v)
+        io.stderr:write("Using address: " .. v .. "\n")
         net.listen(v)
       else
         print("Skipping address: " .. v)

@@ -5,7 +5,7 @@ MAINTAINER Michal Karm Babacek <karm@email.cz>
 ENV PKGS_AUX automake autoconf gcc git findutils which patch libtool pkgconfig \
     gnutls-devel jansson-devel userspace-rcu-devel libcurl-devel libcmocka-devel knot-devel gmp-devel nettle-devel hiredis-devel libmemcached-devel
 
-ENV PKGS luajit luajit-devel libuv libuv-devel gnutls jansson bash libcurl nettle gmp knot knot-libs hiredis libmemcached supervisor
+ENV PKGS luajit luajit-devel libuv libuv-devel gnutls jansson bash libcurl nettle gmp knot knot-libs hiredis libmemcached supervisor bind-utils
 
 ENV PKG_CONFIG_PATH /usr/bin/pkg-config
 ENV CFLAGS -O2 -ftree-vectorize -fstack-protector -g
@@ -58,6 +58,6 @@ ENV PATH=$PATH:/usr/local/bin/:/usr/local/sbin/
 
 # Supervisor
 ADD supervisord.conf /etc/supervisor/conf.d/supervisord.conf
-
+ADD monitor.sh /etc/supervisor/conf.d/monitor.sh
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf", "-n"]
 
