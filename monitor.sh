@@ -17,10 +17,10 @@ done
 echo "From now on, any failure means container teardown."
 
 while [[ 1 ]]; do
-    echo "Checking resolver's sanity..."
+    #echo "Checking resolver's sanity..."
     checkit
     if [[ "$SUCCESS" > 0 ]]; then
-        echo "OK"
+        #echo "OK"
     else
         kill -9 1
     fi
