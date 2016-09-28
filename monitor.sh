@@ -4,7 +4,11 @@
 
 SUCCESS=0
 function checkit {
-    SUCCESS=`dig seznam.cz @\`grep "Using address:" /var/log/kresd-stdout.log | tail -n1 | sed 's/Using address: \(.*\)/\1/g'\` | grep -P -c "ANSWER: [1-9]+"`
+    local address="`grep "Using address:" /var/log/kresd-stdout.log | tail -n1 | sed 's/Using address: \(.*\)/\1/g'`"
+    SUCCESS=`dig seznam.cz @${address} | grep -P -c "ANSWER: [1-9]+"`
+    if [[ "$SUCCESS" < 1 ]]; then
+        SUCCESS=`dig google.com @${address} | grep -P -c "ANSWER: [1-9]+"`
+    fi
 }
 
 echo "Initial checking..."
@@ -16,12 +20,15 @@ done
 
 echo "From now on, any failure means container teardown."
 
+FAIL_COUNTER=0
 while [[ 1 ]]; do
-    #echo "Checking resolver's sanity..."
     checkit
     if [[ "$SUCCESS" > 0 ]]; then
-        #echo "OK"
+        FAIL_COUNTER=0
     else
+        let FAIL_COUNTER=$FAIL_COUNTER+1
+    fi
+    if [[ "$FAIL_COUNTER" > 1 ]]; then
         kill -9 1
     fi
     sleep 5
