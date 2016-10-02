@@ -31,6 +31,7 @@
 #define USER_AGENT "Knot-resolver Sinkit/0.1"
 // What could possibly go wrong?
 #define SINKIT_ORACULUM_URL_MAX_LEN 1024
+#define RESPONSE_BUFFER_BYTES 1024 * 640 //640K ought to be enough for anybody...
 
 #define TESTING
 
@@ -128,8 +129,27 @@ void add_to_cache(const char *key, const char *value) {
     }
 }
 
-// TODO: Get rid of malloc, make use of static memory
-size_t write_callback(void *ptr, size_t size, size_t nmemb, void *buff) {
+static size_t write_callback(void *contents, size_t size, size_t nmemb, void *userp) {
+  size_t realsize = size * nmemb;
+  struct oraculum_response *mem = (struct oraculum_response *)userp;
+ 
+  /* We know the maximum response length; no need for growing the buffer.
+  mem->memory = realloc(mem->memory, mem->size + realsize + 1);
+  if(mem->memory == NULL) {
+    die("Failed to allocate memory.\n");
+  }
+  */ 
+
+  memcpy(&(mem->response_body[mem->size]), contents, realsize);
+  mem->size += realsize;
+  mem->response_body[mem->size] = 0;
+ 
+  return realsize;
+}
+
+// TODO: Get rid of realloc, make use of static memory
+/*
+static size_t write_callback(void *ptr, size_t size, size_t nmemb, void *buff) {
     struct oraculum_response *data = buff;
     size_t index = data->size;
     size_t n = (size * nmemb);
@@ -137,7 +157,7 @@ size_t write_callback(void *ptr, size_t size, size_t nmemb, void *buff) {
 
     data->size += (size * nmemb);
 
-    DEBUG_MSG("data at %p size=%ld nmemb=%ld\n", ptr, size, nmemb);
+    DEBUG_MSG("TAGX: data at %p size=%ld nmemb=%ld\n", ptr, size, nmemb);
 
     tmp = realloc(data->response_body, data->size + 1); // +1 for '\0'
 
@@ -153,6 +173,7 @@ size_t write_callback(void *ptr, size_t size, size_t nmemb, void *buff) {
 
     return size * nmemb;
 }
+*/
 
 void init_connection() {
     DEBUG_MSG("init_connection entry: done\n");
@@ -255,7 +276,9 @@ void init_connection() {
 
 
     data.size = 0;
-    data.response_body = malloc(sinkit_max_api_response_body_size); // initial buffer TODO: get rid of malloc, we know its size
+   //data.response_body = malloc(sinkit_max_api_response_body_size); // initial buffer
+    data.response_body = malloc(RESPONSE_BUFFER_BYTES);
+
     if(NULL == data.response_body) {
         //TODO: At this point, we should probably outright crash.
         die("Failed to allocate memory.\n");
@@ -278,9 +301,9 @@ void init_connection() {
        //curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 1L);
        curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, sinkit_oraculum_hard_timeout_ms);
        curl_easy_setopt(curl, CURLOPT_TCP_KEEPALIVE, 1L);
-       /* keep-alive idle time to 120 seconds */
+       /* keep-alive idle time in seconds */
        curl_easy_setopt(curl, CURLOPT_TCP_KEEPIDLE, sinkit_curlopt_tcp_keepidle_s);
-       /* interval time between keep-alive probes: 20 seconds */
+       /* interval time between keep-alive in seconds */
        curl_easy_setopt(curl, CURLOPT_TCP_KEEPINTVL, sinkit_curlopt_tcp_keepintvl_s);
 #ifdef TESTING
        curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
@@ -325,7 +348,7 @@ bool api_call(const char* url) {
             nocache_response_cmp = INT8_MAX;
         } else {
             curl_easy_setopt(curl, CURLOPT_URL, url);
-            DEBUG_MSG("Gonna curl_easy_perform with URL %s", url);
+            DEBUG_MSG("Gonna curl_easy_perform with URL %s\n", url);
             res = curl_easy_perform(curl);
             long http_code = 0;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
