@@ -4,7 +4,7 @@
 
 SUCCESS=0
 function checkit {
-    local address="`grep "Using address:" /var/log/kresd-stdout.log | tail -n1 | sed 's/Using address: \(.*\)/\1/g'`"
+    local address="`networkctl status ${SINKIT_KRESD_NIC} | grep -o \" \(${SINKIT_ADDR_PREFIX}.*\)\"`"
     SUCCESS=`dig seznam.cz @${address} | grep -P -c "ANSWER: [1-9]+"`
     if [[ "$SUCCESS" < 1 ]]; then
         SUCCESS=`dig google.com @${address} | grep -P -c "ANSWER: [1-9]+"`

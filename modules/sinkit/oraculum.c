@@ -325,6 +325,7 @@ bool api_call(const char* url) {
             nocache_response_cmp = INT8_MAX;
         } else {
             curl_easy_setopt(curl, CURLOPT_URL, url);
+            DEBUG_MSG("Gonna curl_easy_perform with URL %s", url);
             res = curl_easy_perform(curl);
             long http_code = 0;
             curl_easy_getinfo(curl, CURLINFO_RESPONSE_CODE, &http_code);
