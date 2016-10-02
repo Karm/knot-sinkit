@@ -8,7 +8,7 @@ ENV PKGS_AUX automake autoconf gcc git findutils which patch libtool pkgconfig \
 ENV PKGS luajit luajit-devel libuv libuv-devel gnutls jansson bash libcurl nettle gmp knot knot-libs hiredis libmemcached supervisor bind-utils
 
 ENV PKG_CONFIG_PATH /usr/bin/pkg-config
-ENV CFLAGS -O2 -ftree-vectorize -fstack-protector -g
+ENV CFLAGS -O2 -ftree-vectorize -Wall -g
 ENV LDFLAGS -Wl,--as-needed
 
 # Expose port
