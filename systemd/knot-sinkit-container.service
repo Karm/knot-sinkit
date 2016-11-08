@@ -1,0 +1,39 @@
+[Unit]
+Description=Knot DNS Resolver with Sinkit module container
+Requires=docker.service
+After=docker.service
+
+[Service]
+Restart=always
+ExecStartPre=-/usr/bin/docker kill knot-sinkit
+ExecStartPre=-/usr/bin/docker rm -f knot-sinkit
+ExecStart=/usr/bin/docker run -p 53:53/tcp  -p 53:53/udp \
+ -e 'SINKIT_ACCESS_TOKEN=X-sinkit-token: dasadsadasd' \
+ -e 'SINKIT_CACHE_TTL_S=1500' \
+ -e 'SINKIT_CURLOPT_TCP_KEEPIDLE_S=120' \
+ -e 'SINKIT_CURLOPT_TCP_KEEPINTVL_S=20' \
+ -e 'SINKIT_KRESD_CACHE_G=1' \
+ -e 'SINKIT_KRESD_CACHE_STORAGE=lmdb:///data/' \
+ -e 'SINKIT_KRESD_FORKS=-f 2' \
+ -e 'SINKIT_KRESD_NIC=eth0' \
+ -e 'SINKIT_KRESD_PREDICT_TRACK_LAST_H=6' \
+ -e 'SINKIT_KRESD_PREDICT_WINDOW_M=5' \
+ -e 'SINKIT_MAX_API_RESPONSE_BODY_SIZE=32' \
+ -e 'SINKIT_MAX_CACHE_SIZE=1000000' \
+ -e 'SINKIT_ORACULUM_DISABLED=1' \
+ -e 'SINKIT_ORACULUM_HARD_TIMEOUT_MS=600' \
+ -e 'SINKIT_ORACULUM_NEGATIVE_RESPONSE_STRING=null' \
+ -e 'SINKIT_ORACULUM_NOCACHE_RESPONSE_STRING=nocache' \
+ -e 'SINKIT_ORACULUM_RECOVERY_SLEEP_S=20' \
+ -e 'SINKIT_ORACULUM_URL=http://feedcore-lb.core:8080/sinkit/rest/blacklist/dns' \
+ -e 'SINKIT_SINKHOLE=137.116.197.12' \
+ -e 'SINKIT_SINKHOLE_BASED_ON_IP_ADDRESS=0' \
+ -e 'SO_REUSEPORT=yes' \
+ -e 'SINKIT_KRESD_VERBOSE=' \
+ -d -i \
+ --ulimit core=2000000 --privileged --name knot-sinkit karm/knot-sinkit:testing
+ExecStop=/usr/bin/docker stop -t 1 knot-sinkit
+ExecStopPost=/usr/bin/docker rm -f knot-sinkit
+
+[Install]
+WantedBy=default.target
